@@ -18,6 +18,14 @@ POST Body: Javascript source code of the query
 
 Response: JSON results, depending on the query.
 
+#### `/api/v1/query/gql`
+
+POST Body: ISO/IEC 39075 GQL script.
+
+Response: JSON diagnostics or results from the experimental GQL implementation.
+At this milestone Cayley validates the script and reports structured errors
+until planning and execution support ships.
+
 #### `/api/v1/query/graphql`
 
 POST Body: [GraphQL](graphql.md) query
