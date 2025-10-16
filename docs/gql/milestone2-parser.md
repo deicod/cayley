@@ -8,10 +8,13 @@ required for later planning milestones.
 
 * `query/gql/parser` tokenizes multi-statement scripts, tracks source positions,
   and builds strongly-typed statement nodes (e.g. `UseGraphStatement`,
-  `MatchStatement`, `CommandStatement`).【F:query/gql/parser/parser.go†L12-L332】
+  `MatchStatement`, `CommandStatement`).【F:query/gql/parser/parser.go†L11-L320】
+* Top-level clause detection respects quoting, nested delimiters, and multiline
+  layouts so `WHERE`/`RETURN` boundaries are recovered without being confused by
+  embedded keywords.【F:query/gql/parser/parser.go†L263-L415】【F:query/gql/parser/parser.go†L418-L498】
 * The parser preserves quoted strings, nested projection expressions, and
   provides detailed diagnostics for unterminated strings, empty statements, and
-  missing clauses.【F:query/gql/parser/parser.go†L64-L193】【F:query/gql/parser/parser.go†L236-L332】
+  missing clauses.【F:query/gql/parser/parser.go†L55-L198】【F:query/gql/parser/parser.go†L263-L320】
 
 ## Semantic Validation
 
@@ -35,8 +38,9 @@ required for later planning milestones.
 
 ## Testing and Tooling
 
-* Unit tests cover parser splitting, projection parsing, semantic authorization,
-  and diagnostic propagation to guard against regressions.【F:query/gql/parser/parser_test.go†L1-L44】【F:query/gql/session_test.go†L1-L55】【F:query/gql/semantic/semantic_test.go†L1-L200】
+* Unit tests cover parser splitting, multiline clause handling, projection
+  parsing, semantic authorization, and diagnostic propagation to guard against
+  regressions.【F:query/gql/parser/parser_test.go†L1-L124】【F:query/gql/session_test.go†L1-L55】【F:query/gql/semantic/semantic_test.go†L1-L200】
 
 These components complete the front-end readiness required by Milestone 2 and
 unlock the planner and execution work tracked in Milestone 3.
