@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:build !appengine
 // +build !appengine
 
 package repl
@@ -31,6 +32,7 @@ import (
 	"github.com/cayleygraph/cayley/clog"
 	"github.com/cayleygraph/cayley/graph"
 	"github.com/cayleygraph/cayley/query"
+	"github.com/cayleygraph/cayley/query/gql/diagnostic"
 	"github.com/cayleygraph/quad/nquads"
 )
 
@@ -215,7 +217,11 @@ func Repl(ctx context.Context, h *graph.Handle, queryLanguage string, timeout ti
 		if err == query.ErrParseMore {
 			// collect more input
 		} else if err != nil {
-			fmt.Println("Error: ", err)
+			if derr, ok := diagnostic.As(err); ok {
+				fmt.Println(diagnostic.FormatDiagnostics(derr.DiagnosticsList()))
+			} else {
+				fmt.Println("Error: ", err)
+			}
 			code = ""
 		} else {
 			code = ""
