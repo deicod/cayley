@@ -3,6 +3,7 @@ package parser
 import (
 	"strings"
 	"unicode"
+	"unicode/utf8"
 
 	"github.com/cayleygraph/cayley/query/gql/diagnostic"
 )
@@ -270,8 +271,7 @@ func parseMatch(seg segment) (Statement, error) {
 			Column:    seg.column,
 		})
 	}
-	upper := strings.ToUpper(body)
-	returnIdx := strings.Index(upper, " RETURN ")
+	returnIdx := findTopLevelKeyword(body, "RETURN")
 	if returnIdx == -1 {
 		return nil, diagnostic.NewError("gql: invalid MATCH statement", diagnostic.Diagnostic{
 			Severity:  diagnostic.SeverityError,
@@ -281,14 +281,14 @@ func parseMatch(seg segment) (Statement, error) {
 			Column:    seg.column,
 		})
 	}
-	whereIdx := strings.Index(upper[:returnIdx], " WHERE ")
+	whereIdx := findTopLevelKeyword(body[:returnIdx], "WHERE")
 	var (
 		pattern string
 		where   string
 	)
 	if whereIdx != -1 {
 		pattern = strings.TrimSpace(body[:whereIdx])
-		where = strings.TrimSpace(body[whereIdx+len(" WHERE ") : returnIdx])
+		where = strings.TrimSpace(body[whereIdx+len("WHERE") : returnIdx])
 	} else {
 		pattern = strings.TrimSpace(body[:returnIdx])
 	}
@@ -301,7 +301,7 @@ func parseMatch(seg segment) (Statement, error) {
 			Column:    seg.column,
 		})
 	}
-	projection := strings.TrimSpace(body[returnIdx+len(" RETURN "):])
+	projection := strings.TrimSpace(body[returnIdx+len("RETURN"):])
 	if projection == "" {
 		return nil, diagnostic.NewError("gql: invalid MATCH statement", diagnostic.Diagnostic{
 			Severity:  diagnostic.SeverityError,
@@ -413,4 +413,86 @@ func splitProjection(projection string) []string {
 		}
 	}
 	return parts
+}
+
+func findTopLevelKeyword(input, keyword string) int {
+	if keyword == "" {
+		return -1
+	}
+	upper := strings.ToUpper(input)
+	target := strings.ToUpper(keyword)
+	var (
+		depth int
+		quote rune
+	)
+	for idx := 0; idx < len(input); {
+		r, size := utf8.DecodeRuneInString(input[idx:])
+		if quote != 0 {
+			if r == '\\' {
+				idx += size
+				if idx < len(input) {
+					_, nextSize := utf8.DecodeRuneInString(input[idx:])
+					idx += nextSize
+				}
+				continue
+			}
+			if r == quote {
+				if quote == '\'' {
+					nextIdx := idx + size
+					if nextIdx < len(input) {
+						nextRune, nextSize := utf8.DecodeRuneInString(input[nextIdx:])
+						if nextRune == '\'' {
+							idx = nextIdx + nextSize
+							continue
+						}
+					}
+				}
+				quote = 0
+			}
+			idx += size
+			continue
+		}
+		switch r {
+		case '\'', '"':
+			quote = r
+			idx += size
+			continue
+		case '(', '[', '{':
+			depth++
+			idx += size
+			continue
+		case ')', ']', '}':
+			if depth > 0 {
+				depth--
+			}
+			idx += size
+			continue
+		default:
+			if depth == 0 && idx+len(target) <= len(input) && upper[idx:idx+len(target)] == target {
+				prev := previousRuneStart(input, idx)
+				next := idx + len(target)
+				if isBoundaryAt(input, prev) && isBoundaryAt(input, next) {
+					return idx
+				}
+			}
+			idx += size
+		}
+	}
+	return -1
+}
+
+func previousRuneStart(input string, idx int) int {
+	if idx <= 0 {
+		return -1
+	}
+	_, size := utf8.DecodeLastRuneInString(input[:idx])
+	return idx - size
+}
+
+func isBoundaryAt(input string, idx int) bool {
+	if idx < 0 || idx >= len(input) {
+		return true
+	}
+	r, _ := utf8.DecodeRuneInString(input[idx:])
+	return !(unicode.IsLetter(r) || unicode.IsDigit(r) || r == '_')
 }

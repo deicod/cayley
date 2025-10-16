@@ -77,3 +77,48 @@ func TestParseSplitNestedSemicolons(t *testing.T) {
 		t.Fatalf("expected second statement to be MatchStatement, got %T", script.Statements[1])
 	}
 }
+
+func TestParseMatchMultiLine(t *testing.T) {
+	input := "MATCH (n)-[e]->(m)\nWHERE n.name = \"Alice\"\nRETURN n, m, e"
+	script, err := parser.ParseScript(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(script.Statements) != 1 {
+		t.Fatalf("expected one statement, got %d", len(script.Statements))
+	}
+	match, ok := script.Statements[0].(*parser.MatchStatement)
+	if !ok {
+		t.Fatalf("expected MatchStatement, got %T", script.Statements[0])
+	}
+	if match.Pattern != "(n)-[e]->(m)" {
+		t.Fatalf("unexpected pattern: %q", match.Pattern)
+	}
+	if match.Where != "n.name = \"Alice\"" {
+		t.Fatalf("unexpected WHERE clause: %q", match.Where)
+	}
+	if len(match.Return) != 3 {
+		t.Fatalf("expected 3 projection items, got %d", len(match.Return))
+	}
+}
+
+func TestParseMatchIgnoresReturnInStrings(t *testing.T) {
+	input := "MATCH (n {note: 'please return soon'}) RETURN n"
+	script, err := parser.ParseScript(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(script.Statements) != 1 {
+		t.Fatalf("expected one statement, got %d", len(script.Statements))
+	}
+	match, ok := script.Statements[0].(*parser.MatchStatement)
+	if !ok {
+		t.Fatalf("expected MatchStatement, got %T", script.Statements[0])
+	}
+	if match.Pattern != "(n {note: 'please return soon'})" {
+		t.Fatalf("unexpected pattern: %q", match.Pattern)
+	}
+	if len(match.Return) != 1 || match.Return[0] != "n" {
+		t.Fatalf("unexpected RETURN clause: %+v", match.Return)
+	}
+}
