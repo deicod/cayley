@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"unicode"
 
 	"github.com/cayleygraph/cayley/query/gql/diagnostic"
 	"github.com/cayleygraph/cayley/query/gql/parser"
@@ -231,6 +232,41 @@ func extractVariables(pattern string) []string {
 	return vars
 }
 
+func isIdentifier(name string) bool {
+	if name == "" {
+		return false
+	}
+	for i, r := range name {
+		if i == 0 {
+			if !(unicode.IsLetter(r) || r == '_') {
+				return false
+			}
+			continue
+		}
+		if !(unicode.IsLetter(r) || unicode.IsDigit(r) || r == '_') {
+			return false
+		}
+	}
+	return true
+}
+
+func isFunctionProjection(expr string) bool {
+	trimmed := strings.TrimSpace(expr)
+	if trimmed == "" {
+		return false
+	}
+	openIdx := strings.Index(trimmed, "(")
+	if openIdx <= 0 {
+		return false
+	}
+	prefix := strings.TrimSpace(trimmed[:openIdx])
+	prefix = strings.Trim(prefix, "`\"")
+	if prefix == "" {
+		return false
+	}
+	return isIdentifier(prefix)
+}
+
 func unresolvedVariables(known []string, projections []string) []string {
 	if len(projections) == 0 {
 		return nil
@@ -243,6 +279,9 @@ func unresolvedVariables(known []string, projections []string) []string {
 	for _, item := range projections {
 		trimmed := strings.TrimSpace(item)
 		if trimmed == "" || trimmed == "*" {
+			continue
+		}
+		if isFunctionProjection(trimmed) {
 			continue
 		}
 		aliasIdx := strings.IndexAny(trimmed, " ()")
