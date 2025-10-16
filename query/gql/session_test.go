@@ -19,6 +19,16 @@ func TestSessionRequiresInput(t *testing.T) {
 	}
 }
 
+func TestLanguageRegistered(t *testing.T) {
+	lang := query.GetLanguage(gql.Name)
+	if lang == nil {
+		t.Fatalf("expected language %q to be registered", gql.Name)
+	}
+	if lang.Session == nil {
+		t.Fatalf("registered language %q is missing a session factory", gql.Name)
+	}
+}
+
 func TestSessionParseDiagnostics(t *testing.T) {
 	ses := gql.NewSession(nil)
 	_, err := ses.Execute(context.Background(), "MATCH (n)", query.Options{})

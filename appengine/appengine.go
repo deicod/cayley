@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:build appengine || appenginevm
 // +build appengine appenginevm
 
 package main
@@ -30,6 +31,7 @@ import (
 
 	// Register supported query languages
 	_ "github.com/cayleygraph/cayley/query/gizmo"
+	_ "github.com/cayleygraph/cayley/query/gql"
 	_ "github.com/cayleygraph/cayley/query/graphql"
 	_ "github.com/cayleygraph/cayley/query/mql"
 )
