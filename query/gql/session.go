@@ -35,6 +35,7 @@ type Session struct {
 	validator    *semantic.Validator
 	role         string
 	defaultGraph string
+	milestone    Milestone
 }
 
 type SessionOption func(*Session)
@@ -72,6 +73,9 @@ func NewSession(qs graph.QuadStore, opts ...SessionOption) *Session {
 	if s.validator == nil {
 		s.validator = semantic.NewValidator(s.catalog)
 	}
+	if s.milestone == MilestoneUnknown {
+		s.milestone = Milestone2ParserValidation
+	}
 	return s
 }
 
@@ -93,9 +97,17 @@ func (s *Session) Execute(ctx context.Context, input string, opt query.Options) 
 		return nil, query.ErrParseMore
 	}
 
+	if !s.milestone.Supports(CapabilityParsing) {
+		return nil, &MilestoneError{Milestone: s.milestone, Capability: CapabilityParsing}
+	}
+
 	script, err := parser.ParseScript(input)
 	if err != nil {
 		return nil, err
+	}
+
+	if !s.milestone.Supports(CapabilitySemanticValidation) {
+		return nil, &MilestoneError{Milestone: s.milestone, Capability: CapabilitySemanticValidation}
 	}
 
 	if s.validator == nil {
@@ -108,6 +120,10 @@ func (s *Session) Execute(ctx context.Context, input string, opt query.Options) 
 	})
 	if err != nil {
 		return nil, err
+	}
+
+	if !s.milestone.Supports(CapabilityExecution) {
+		return nil, &MilestoneError{Milestone: s.milestone, Capability: CapabilityExecution}
 	}
 
 	return nil, ErrNotImplemented
@@ -141,5 +157,11 @@ func WithRole(role string) SessionOption {
 func WithDefaultGraph(name string) SessionOption {
 	return func(s *Session) {
 		s.defaultGraph = name
+	}
+}
+
+func WithMilestone(m Milestone) SessionOption {
+	return func(s *Session) {
+		s.milestone = m
 	}
 }
