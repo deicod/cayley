@@ -52,8 +52,27 @@ func TestSessionSemanticValidation(t *testing.T) {
 	cat.SetDefaultGraph("main")
 	ses := gql.NewSession(nil, gql.WithCatalog(cat), gql.WithRole("reader"), gql.WithDefaultGraph("main"))
 	_, err := ses.Execute(context.Background(), "MATCH (n) RETURN n", query.Options{})
-	if err != gql.ErrNotImplemented {
-		t.Fatalf("expected ErrNotImplemented, got %v", err)
+	var merr *gql.MilestoneError
+	if !errors.As(err, &merr) {
+		t.Fatalf("expected milestone error, got %v", err)
+	}
+	if merr.Capability != gql.CapabilityExecution {
+		t.Fatalf("expected execution capability error, got %v", merr.Capability)
+	}
+}
+
+func TestSessionMilestoneParsingDisabled(t *testing.T) {
+	ses := gql.NewSession(nil, gql.WithMilestone(gql.Milestone1Readiness))
+	_, err := ses.Execute(context.Background(), "MATCH (n) RETURN n", query.Options{})
+	if err == nil {
+		t.Fatalf("expected error, got nil")
+	}
+	var merr *gql.MilestoneError
+	if !errors.As(err, &merr) {
+		t.Fatalf("expected milestone error, got %v", err)
+	}
+	if merr.Capability != gql.CapabilityParsing {
+		t.Fatalf("expected parsing capability error, got %v", merr.Capability)
 	}
 }
 
