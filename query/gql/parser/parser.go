@@ -87,6 +87,7 @@ func splitStatements(input string) ([]segment, error) {
 		startOff  = -1
 		startLine = 1
 		startCol  = 1
+		stack     []rune
 	)
 	for i, r := range input {
 		if startOff == -1 {
@@ -116,19 +117,31 @@ func splitStatements(input string) ([]segment, error) {
 			switch r {
 			case '\'', '"':
 				quote = r
-			case ';':
-				text := strings.TrimSpace(buf.String()[:buf.Len()-1])
-				if text != "" {
-					segments = append(segments, segment{
-						text:   text,
-						start:  startOff,
-						line:   startLine,
-						column: startCol,
-					})
+			case '(', '[', '{':
+				stack = append(stack, r)
+			case ')', ']', '}':
+				if len(stack) > 0 {
+					top := stack[len(stack)-1]
+					if matchesDelimiter(top, r) {
+						stack = stack[:len(stack)-1]
+					}
 				}
-				buf.Reset()
-				startOff = -1
-				quote = 0
+			case ';':
+				if len(stack) == 0 {
+					text := strings.TrimSpace(buf.String()[:buf.Len()-1])
+					if text != "" {
+						segments = append(segments, segment{
+							text:   text,
+							start:  startOff,
+							line:   startLine,
+							column: startCol,
+						})
+					}
+					buf.Reset()
+					startOff = -1
+					quote = 0
+					stack = stack[:0]
+				}
 			}
 		}
 		if r == '\n' {
@@ -159,6 +172,19 @@ func splitStatements(input string) ([]segment, error) {
 		}
 	}
 	return segments, nil
+}
+
+func matchesDelimiter(open, close rune) bool {
+	switch open {
+	case '(':
+		return close == ')'
+	case '[':
+		return close == ']'
+	case '{':
+		return close == '}'
+	default:
+		return false
+	}
 }
 
 func parseStatement(seg segment) (Statement, error) {

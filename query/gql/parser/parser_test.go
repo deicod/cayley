@@ -60,3 +60,20 @@ func TestParseSplitWithQuotedSemicolon(t *testing.T) {
 		t.Fatalf("expected one statement, got %d", len(script.Statements))
 	}
 }
+
+func TestParseSplitNestedSemicolons(t *testing.T) {
+	input := "CALL { MATCH (n) RETURN n; }; MATCH (m) RETURN m"
+	script, err := parser.ParseScript(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(script.Statements) != 2 {
+		t.Fatalf("expected two statements, got %d", len(script.Statements))
+	}
+	if _, ok := script.Statements[0].(*parser.CommandStatement); !ok {
+		t.Fatalf("expected first statement to be CommandStatement, got %T", script.Statements[0])
+	}
+	if _, ok := script.Statements[1].(*parser.MatchStatement); !ok {
+		t.Fatalf("expected second statement to be MatchStatement, got %T", script.Statements[1])
+	}
+}
