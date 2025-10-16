@@ -34,7 +34,10 @@ required for later planning milestones.
   and REPL surfaces to display consistent GQL terminology.【F:query/gql/diagnostic/diagnostic.go†L12-L86】
 * `query/gql/session` wires the parser and validator into the query language
   registry, enforces Cayley's collation contract, and exposes structured HTTP
-  error responses until execution support lands.【F:query/gql/session.go†L19-L126】
+  error responses until execution support lands.【F:query/gql/session.go†L19-L148】
+* Milestone gating keeps parsing, semantic validation, and execution stages
+  aligned with the published roadmap via `gql.WithMilestone`, allowing HTTP and
+  REPL surfaces to advertise the active milestone explicitly.【F:query/gql/milestones.go†L4-L86】【F:query/gql/session.go†L36-L133】
 
 ## Testing and Tooling
 
