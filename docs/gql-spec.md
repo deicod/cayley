@@ -15,11 +15,6 @@ compatibility with existing query languages and storage back ends.
 - Implementing vendor-specific GQL extensions outside the ISO/IEC 39075:2024 scope.
 - Building new storage engines; focus is on enhancing current QuadStore implementations.
 
-## Stakeholders
-- Core Cayley maintainers responsible for query execution, storage adapters, and API surfaces.
-- Developer tooling and UI contributors supporting editors, REPLs, and documentation.
-- Early adopters providing feedback on standards coverage and interoperability.
-
 ## Requirements Summary
 | Area | Requirement |
 | --- | --- |
@@ -51,19 +46,18 @@ compatibility with existing query languages and storage back ends.
 - `gql` package hierarchy (`parser`, `semantic`, `planner`, `executor`) wired into `query` registry.
 - Storage capability matrix documenting required enhancements per backend.
 - Test harness covering parser conformance, semantic validation, planner correctness, and execution integration.
-- Documentation updates (usage guides, API references, migration notes).
 - Operational artifacts (configuration schema updates, monitoring metrics, deployment guides).
 
 ## Risks and Mitigations
 - **Standards Complexity**: Mitigate by maintaining a living specification summary and aligning with community compliance suites.
 - **Performance Regression**: Introduce benchmarking pipelines comparing GQL to existing Gizmo/MQL workloads; optimize iterators accordingly.
 - **Storage Gaps**: Prioritize audits and prototype indexes/statistics early; provide fallbacks where full feature support is not feasible.
-- **Adoption Friction**: Deliver tooling, tutorials, and migration guides in parallel with core implementation.
+- **Adoption Friction**: Deliver tooling improvements that simplify migration alongside core implementation.
 
 ## Acceptance Criteria
 - `gql` language selectable via HTTP API, REPL, and client SDKs with parity in session options.
 - End-to-end queries pass conformance suites covering pattern matching, path expressions, tabular projections, and administrative commands.
 - QuadStore back ends document and expose feature support, with tests demonstrating compliant behavior or explicit limitations.
-- Query editor and documentation updated to include GQL usage examples and troubleshooting guidance.
+- Query editor updated to include GQL usage examples and troubleshooting guidance.
 - Monitoring dashboards expose GQL-specific metrics (query counts, latencies, error classes).
 

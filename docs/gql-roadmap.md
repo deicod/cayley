@@ -9,12 +9,8 @@ This roadmap outlines the recommended phases to deliver a compliant and producti
 ## Phase 0: Standards Alignment and Discovery
 
 1. **Requirements Deep Dive**
-   - Build a cross-functional understanding of mandatory vs. optional GQL features, conformance levels, and formal semantics.
-   - Produce a living specification summary that maps GQL constructs to Cayley capabilities and identifies gaps.
-2. **Stakeholder Input and UX Research**
-   - Interview current users of Gizmo, MQL, and GraphQL endpoints to capture priority use cases and migration concerns.
-   - Document the expected developer experience (REPL, HTTP API, client libraries) for GQL.
-3. **Success Metrics and Acceptance Tests**
+   - Produce a specification summary that maps GQL constructs to Cayley capabilities and identifies gaps in existing components.
+2. **Success Metrics and Acceptance Tests**
    - Define compliance tests (e.g., open-source GQL suites, bespoke validation sets) and performance benchmarks that must be met before GA.
 
 ## Phase 1: Architecture Preparation
@@ -57,31 +53,26 @@ This roadmap outlines the recommended phases to deliver a compliant and producti
 
 1. **API and Client Updates**
    - Expose GQL through existing HTTP endpoints, gRPC (if applicable), and client SDKs alongside Gizmo/MQL.
-   - Provide migration guides and examples illustrating equivalent queries across languages.
 2. **Tooling and UI**
    - Update the built-in query editor and visualization tools in `ui/` to support GQL syntax highlighting, auto-completion, and explain plans.
    - Add REPL commands for managing catalogs, roles, and other GQL administrative tasks.
 3. **Operational Readiness**
    - Extend configuration schemas, deployment manifests, and monitoring dashboards to expose GQL-specific knobs and metrics.
-   - Document best practices for capacity planning and scaling under GQL workloads.
 
-## Phase 5: Verification, Documentation, and Release
+## Phase 5: Verification and Release
 
 1. **Compliance and Interoperability Testing**
    - Execute comprehensive compliance suites, regression tests across all back ends, and interoperability checks with external GQL tools.
    - Benchmark performance and compare to baseline Gizmo/MQL queries to validate parity or improvements.
-2. **Documentation and Developer Outreach**
-   - Publish official documentation, tutorials, and upgrade guides detailing GQL support, limitations, and roadmap follow-ups.
-   - Host webinars or blog posts to educate users about new capabilities.
-3. **GA Criteria and Support Plan**
+2. **GA Criteria and Support Plan**
    - Define clear release gates (test coverage, SLAs, bug burndown) and prepare an ongoing maintenance cadence for the GQL subsystem.
    - Establish triage guidelines for GQL-related issues and feedback loops for future enhancements.
 
 ## Suggested Timeline and Dependencies
 
-- **Quarter 1**: Complete Phase 0 deliverables, architectural audits, and publish initial design RFCs.
+- **Quarter 1**: Complete Phase 0 deliverables and architectural audits.
 - **Quarter 2**: Implement parser, AST, and semantic validation; land foundational session and storage updates.
 - **Quarter 3**: Deliver execution engine integration, optimizer enhancements, and begin end-to-end testing.
-- **Quarter 4**: Focus on ecosystem integration, documentation, compliance validation, and general availability launch.
+- **Quarter 4**: Focus on ecosystem integration, compliance validation, and general availability launch.
 
 Dependencies across phases should be tracked in the project board with explicit cross-links to Cayley packages (`query`, `graph`, `schema`, `ui`) to maintain visibility and enable incremental delivery.
