@@ -29,13 +29,18 @@ func init() {
 	})
 }
 
+type validator interface {
+	Validate(context.Context, *parser.Script, semantic.Options) (*semantic.Result, error)
+}
+
 type Session struct {
-	qs           graph.QuadStore
-	catalog      semantic.Catalog
-	validator    *semantic.Validator
-	role         string
-	defaultGraph string
-	milestone    Milestone
+	qs            graph.QuadStore
+	catalog       semantic.Catalog
+	validator     validator
+	role          string
+	defaultGraph  string
+	defaultSchema string
+	milestone     Milestone
 }
 
 type SessionOption func(*Session)
@@ -115,8 +120,9 @@ func (s *Session) Execute(ctx context.Context, input string, opt query.Options) 
 	}
 
 	_, err = s.validator.Validate(ctx, script, semantic.Options{
-		Role:         s.role,
-		DefaultGraph: s.defaultGraph,
+		Role:          s.role,
+		DefaultGraph:  s.defaultGraph,
+		DefaultSchema: s.defaultSchema,
 	})
 	if err != nil {
 		return nil, err
@@ -157,6 +163,18 @@ func WithRole(role string) SessionOption {
 func WithDefaultGraph(name string) SessionOption {
 	return func(s *Session) {
 		s.defaultGraph = name
+	}
+}
+
+func WithDefaultSchema(name string) SessionOption {
+	return func(s *Session) {
+		s.defaultSchema = name
+	}
+}
+
+func WithValidator(v validator) SessionOption {
+	return func(s *Session) {
+		s.validator = v
 	}
 }
 
